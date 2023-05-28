@@ -96,6 +96,19 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: 'HomePage',
           path: '/homePage',
           builder: (context, params) => HomePageWidget(),
+        ),
+        FFRoute(
+          name: 'GroupPage',
+          path: '/groupPage',
+          builder: (context, params) => GroupPageWidget(
+            groupDetails: params.getParam(
+                'groupDetails', ParamType.DocumentReference, false, ['groups']),
+          ),
+        ),
+        FFRoute(
+          name: 'search',
+          path: '/search',
+          builder: (context, params) => SearchWidget(),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
       urlPathStrategy: UrlPathStrategy.path,
