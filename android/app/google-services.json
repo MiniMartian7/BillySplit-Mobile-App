@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "960382778332",
+    "project_id": "mobilebillyproject2023",
+    "storage_bucket": "mobilebillyproject2023.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:960382778332:android:b56130fa861d0a86282d19",
+        "android_client_info": {
+          "package_name": "com.mycompany.billysplit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq_gbYZK1f0HudIOuTKCqF1F9rCGpKkBg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
