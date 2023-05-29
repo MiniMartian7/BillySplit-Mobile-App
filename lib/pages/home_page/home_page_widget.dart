@@ -6,6 +6,7 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/custom_code/actions/index.dart' as actions;
 import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -370,6 +371,11 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                         hoverColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
                                         onTap: () async {
+                                          _model.sum =
+                                              await actions.transactionSum(
+                                            listViewGroupsRecord.reference.id,
+                                          );
+
                                           context.pushNamed(
                                             'GroupPage',
                                             queryParams: {
@@ -377,8 +383,14 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                                 listViewGroupsRecord.reference,
                                                 ParamType.DocumentReference,
                                               ),
+                                              'sum': serializeParam(
+                                                _model.sum,
+                                                ParamType.double,
+                                              ),
                                             }.withoutNulls,
                                           );
+
+                                          setState(() {});
                                         },
                                         onLongPress: () async {
                                           var confirmDialogResponse =

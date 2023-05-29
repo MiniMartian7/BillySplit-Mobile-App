@@ -103,12 +103,49 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           builder: (context, params) => GroupPageWidget(
             groupDetails: params.getParam(
                 'groupDetails', ParamType.DocumentReference, false, ['groups']),
+            sum: params.getParam('sum', ParamType.double),
           ),
         ),
         FFRoute(
-          name: 'search',
-          path: '/search',
-          builder: (context, params) => SearchWidget(),
+          name: 'AddTransactionMembers',
+          path: '/addTransactionMembers',
+          builder: (context, params) => AddTransactionMembersWidget(
+            groupRef: params.getParam(
+                'groupRef', ParamType.DocumentReference, false, ['groups']),
+            transactionRef: params.getParam('transactionRef',
+                ParamType.DocumentReference, false, ['transaction']),
+            transactionSum: params.getParam('transactionSum', ParamType.double),
+            transactionNmae:
+                params.getParam('transactionNmae', ParamType.String),
+            transactionDescription:
+                params.getParam('transactionDescription', ParamType.String),
+          ),
+        ),
+        FFRoute(
+          name: 'AddGroupMembers',
+          path: '/addGroupMembers',
+          builder: (context, params) => AddGroupMembersWidget(
+            groupRef: params.getParam(
+                'groupRef', ParamType.DocumentReference, false, ['groups']),
+          ),
+        ),
+        FFRoute(
+          name: 'TransactionsResult',
+          path: '/transactionsResult',
+          builder: (context, params) => TransactionsResultWidget(
+            groupDetails: params.getParam(
+                'groupDetails', ParamType.DocumentReference, false, ['groups']),
+            transactionParticipants: params.getParam<DocumentReference>(
+                'transactionParticipants',
+                ParamType.DocumentReference,
+                true,
+                ['users']),
+            transactionName:
+                params.getParam('transactionName', ParamType.String),
+            trasnsactionDescription:
+                params.getParam('trasnsactionDescription', ParamType.String),
+            transactionSum: params.getParam('transactionSum', ParamType.double),
+          ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
       urlPathStrategy: UrlPathStrategy.path,

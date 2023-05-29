@@ -4,4 +4,9 @@ export '/pages/start_page/start_page_widget.dart' show StartPageWidget;
 export '/pages/sign_up_page/sign_up_page_widget.dart' show SignUpPageWidget;
 export '/pages/home_page/home_page_widget.dart' show HomePageWidget;
 export '/pages/group_page/group_page_widget.dart' show GroupPageWidget;
-export '/pages/search/search_widget.dart' show SearchWidget;
+export '/pages/add_transaction_members/add_transaction_members_widget.dart'
+    show AddTransactionMembersWidget;
+export '/pages/add_group_members/add_group_members_widget.dart'
+    show AddGroupMembersWidget;
+export '/pages/transactions_result/transactions_result_widget.dart'
+    show TransactionsResultWidget;

@@ -1,4 +1,6 @@
+import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
+import '/components/input_value/input_value_widget.dart';
 import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -6,21 +8,37 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:text_search/text_search.dart';
-import 'search_model.dart';
-export 'search_model.dart';
+import 'add_transaction_members_model.dart';
+export 'add_transaction_members_model.dart';
 
-class SearchWidget extends StatefulWidget {
-  const SearchWidget({Key? key}) : super(key: key);
+class AddTransactionMembersWidget extends StatefulWidget {
+  const AddTransactionMembersWidget({
+    Key? key,
+    required this.groupRef,
+    required this.transactionRef,
+    required this.transactionSum,
+    required this.transactionNmae,
+    required this.transactionDescription,
+  }) : super(key: key);
+
+  final DocumentReference? groupRef;
+  final DocumentReference? transactionRef;
+  final double? transactionSum;
+  final String? transactionNmae;
+  final String? transactionDescription;
 
   @override
-  _SearchWidgetState createState() => _SearchWidgetState();
+  _AddTransactionMembersWidgetState createState() =>
+      _AddTransactionMembersWidgetState();
 }
 
-class _SearchWidgetState extends State<SearchWidget> {
-  late SearchModel _model;
+class _AddTransactionMembersWidgetState
+    extends State<AddTransactionMembersWidget> {
+  late AddTransactionMembersModel _model;
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final _unfocusNode = FocusNode();
@@ -28,7 +46,14 @@ class _SearchWidgetState extends State<SearchWidget> {
   @override
   void initState() {
     super.initState();
-    _model = createModel(context, () => SearchModel());
+    _model = createModel(context, () => AddTransactionMembersModel());
+
+    // On page load action.
+    SchedulerBinding.instance.addPostFrameCallback((_) async {
+      setState(() {
+        _model.addToUsersList(currentUserReference!);
+      });
+    });
 
     _model.textController ??= TextEditingController();
   }
@@ -60,12 +85,49 @@ class _SearchWidgetState extends State<SearchWidget> {
             ),
           );
         }
-        List<UsersRecord> searchUsersRecordList = snapshot.data!;
+        List<UsersRecord> addTransactionMembersUsersRecordList = snapshot.data!;
         return GestureDetector(
           onTap: () => FocusScope.of(context).requestFocus(_unfocusNode),
           child: Scaffold(
             key: scaffoldKey,
             backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            floatingActionButton: FloatingActionButton(
+              onPressed: () async {
+                final transactionUpdateData = {
+                  'users': _model.usersList,
+                };
+                await widget.transactionRef!.update(transactionUpdateData);
+
+                context.pushNamed(
+                  'TransactionsResult',
+                  queryParams: {
+                    'groupDetails': serializeParam(
+                      widget.groupRef,
+                      ParamType.DocumentReference,
+                    ),
+                    'transactionParticipants': serializeParam(
+                      _model.usersList,
+                      ParamType.DocumentReference,
+                      true,
+                    ),
+                    'transactionName': serializeParam(
+                      widget.transactionNmae,
+                      ParamType.String,
+                    ),
+                    'trasnsactionDescription': serializeParam(
+                      widget.transactionDescription,
+                      ParamType.String,
+                    ),
+                    'transactionSum': serializeParam(
+                      widget.transactionSum,
+                      ParamType.double,
+                    ),
+                  }.withoutNulls,
+                );
+              },
+              backgroundColor: FlutterFlowTheme.of(context).primary,
+              elevation: 8.0,
+            ),
             appBar: AppBar(
               backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
               automaticallyImplyLeading: false,
@@ -111,7 +173,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                               () async {
                                 setState(() {
                                   _model.simpleSearchResults = TextSearch(
-                                    searchUsersRecordList
+                                    addTransactionMembersUsersRecordList
                                         .map(
                                           (record) => TextSearchItem(
                                               record, [record.email!]),
@@ -237,16 +299,6 @@ class _SearchWidgetState extends State<SearchWidget> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(26.0),
-                                        child: Image.network(
-                                          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fHByb2ZpbGV8ZW58MHx8MHx8&auto=format&fit=crop&w=900&q=60',
-                                          width: 36.0,
-                                          height: 36.0,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
                                       Expanded(
                                         child: Padding(
                                           padding:
@@ -307,12 +359,69 @@ class _SearchWidgetState extends State<SearchWidget> {
                                                               .labelMedium,
                                                         ),
                                                       ),
+                                                      Text(
+                                                        columnUsersRecord.email,
+                                                        style:
+                                                            FlutterFlowTheme.of(
+                                                                    context)
+                                                                .bodyMedium,
+                                                      ),
                                                     ],
                                                   ),
                                                 ],
                                               );
                                             },
                                           ),
+                                        ),
+                                      ),
+                                      FFButtonWidget(
+                                        onPressed: () async {
+                                          await showModalBottomSheet(
+                                            isScrollControlled: true,
+                                            backgroundColor: Colors.transparent,
+                                            enableDrag: false,
+                                            context: context,
+                                            builder: (bottomSheetContext) {
+                                              return GestureDetector(
+                                                onTap: () => FocusScope.of(
+                                                        context)
+                                                    .requestFocus(_unfocusNode),
+                                                child: Padding(
+                                                  padding: MediaQuery.of(
+                                                          bottomSheetContext)
+                                                      .viewInsets,
+                                                  child: InputValueWidget(
+                                                    sum: widget.transactionSum
+                                                        .toString(),
+                                                    transactionRef:
+                                                        widget.transactionRef!,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ).then((value) => setState(() {}));
+                                        },
+                                        text: 'Add',
+                                        options: FFButtonOptions(
+                                          height: 40.0,
+                                          padding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  24.0, 0.0, 24.0, 0.0),
+                                          iconPadding:
+                                              EdgeInsetsDirectional.fromSTEB(
+                                                  0.0, 0.0, 0.0, 0.0),
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          textStyle:
+                                              FlutterFlowTheme.of(context)
+                                                  .bodyMedium,
+                                          elevation: 3.0,
+                                          borderSide: BorderSide(
+                                            color: Colors.transparent,
+                                            width: 1.0,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
                                         ),
                                       ),
                                       FFButtonWidget(
@@ -367,7 +476,7 @@ class _SearchWidgetState extends State<SearchWidget> {
                     padding:
                         EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 0.0, 0.0),
                     child: Text(
-                      'Add Members',
+                      'Members in Group',
                       style: FlutterFlowTheme.of(context).labelMedium,
                     ),
                   ),

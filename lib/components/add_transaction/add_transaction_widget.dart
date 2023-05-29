@@ -3,7 +3,6 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -12,7 +11,12 @@ import 'add_transaction_model.dart';
 export 'add_transaction_model.dart';
 
 class AddTransactionWidget extends StatefulWidget {
-  const AddTransactionWidget({Key? key}) : super(key: key);
+  const AddTransactionWidget({
+    Key? key,
+    required this.groupRef,
+  }) : super(key: key);
+
+  final DocumentReference? groupRef;
 
   @override
   _AddTransactionWidgetState createState() => _AddTransactionWidgetState();
@@ -33,8 +37,8 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
     _model = createModel(context, () => AddTransactionModel());
 
     _model.transactionController ??= TextEditingController();
-    _model.sumController1 ??= TextEditingController();
-    _model.sumController2 ??= TextEditingController();
+    _model.sumController ??= TextEditingController();
+    _model.specificationsController ??= TextEditingController();
   }
 
   @override
@@ -48,7 +52,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 417.0,
+      height: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         boxShadow: [
@@ -67,7 +71,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Text(
-              'Create Transaction',
+              'Add Transaction',
               style: FlutterFlowTheme.of(context).displaySmall.override(
                     fontFamily: 'Plus Jakarta Sans',
                     color: FlutterFlowTheme.of(context).primary,
@@ -140,16 +144,16 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: TextFormField(
-                controller: _model.sumController1,
+                controller: _model.sumController,
                 autofocus: true,
                 obscureText: false,
                 decoration: InputDecoration(
-                  labelText: 'Transaction sum',
+                  labelText: 'Transaction value',
                   labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
                         fontFamily: 'Readex Pro',
                         fontSize: 16.0,
                       ),
-                  hintText: 'Insert sum',
+                  hintText: 'insert amount...',
                   hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                         fontFamily: 'Readex Pro',
                         fontSize: 16.0,
@@ -188,22 +192,22 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                       color: Colors.black,
                       fontSize: 16.0,
                     ),
-                validator: _model.sumController1Validator.asValidator(context),
+                validator: _model.sumControllerValidator.asValidator(context),
               ),
             ),
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: TextFormField(
-                controller: _model.sumController2,
+                controller: _model.specificationsController,
                 autofocus: true,
                 obscureText: false,
                 decoration: InputDecoration(
-                  labelText: 'Transaction sum',
+                  labelText: 'Description',
                   labelStyle: FlutterFlowTheme.of(context).labelMedium.override(
                         fontFamily: 'Readex Pro',
                         fontSize: 16.0,
                       ),
-                  hintText: 'Insert sum',
+                  hintText: 'insert description...',
                   hintStyle: FlutterFlowTheme.of(context).labelMedium.override(
                         fontFamily: 'Readex Pro',
                         fontSize: 16.0,
@@ -242,7 +246,9 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                       color: Colors.black,
                       fontSize: 16.0,
                     ),
-                validator: _model.sumController2Validator.asValidator(context),
+                maxLines: 5,
+                validator: _model.specificationsControllerValidator
+                    .asValidator(context),
               ),
             ),
             Padding(
@@ -251,13 +257,47 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                 onPressed: () async {
                   final transactionCreateData = createTransactionRecordData(
                     name: _model.transactionController.text,
-                    sum: double.tryParse(_model.sumController1.text),
-                    createdAt: random_data.randomDate(),
+                    sum: double.tryParse(_model.sumController.text),
+                    createdAt: dateTimeFromSecondsSinceEpoch(
+                        getCurrentTimestamp.secondsSinceEpoch),
+                    specifications: _model.specificationsController.text,
+                    groupReF: widget.groupRef,
+                    createdBy: currentUserReference,
                   );
-                  await TransactionRecord.collection
-                      .doc()
-                      .set(transactionCreateData);
+                  var transactionRecordReference =
+                      TransactionRecord.collection.doc();
+                  await transactionRecordReference.set(transactionCreateData);
+                  _model.transactionRef = TransactionRecord.getDocumentFromData(
+                      transactionCreateData, transactionRecordReference);
                   Navigator.pop(context);
+
+                  context.pushNamed(
+                    'AddTransactionMembers',
+                    queryParams: {
+                      'groupRef': serializeParam(
+                        widget.groupRef,
+                        ParamType.DocumentReference,
+                      ),
+                      'transactionRef': serializeParam(
+                        _model.transactionRef!.reference,
+                        ParamType.DocumentReference,
+                      ),
+                      'transactionSum': serializeParam(
+                        double.tryParse(_model.sumController.text),
+                        ParamType.double,
+                      ),
+                      'transactionNmae': serializeParam(
+                        _model.transactionController.text,
+                        ParamType.String,
+                      ),
+                      'transactionDescription': serializeParam(
+                        _model.specificationsController.text,
+                        ParamType.String,
+                      ),
+                    }.withoutNulls,
+                  );
+
+                  setState(() {});
                 },
                 text: 'Done',
                 options: FFButtonOptions(
@@ -269,7 +309,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                   color: Color(0xFFE7E7EB),
                   textStyle: FlutterFlowTheme.of(context).bodyLarge.override(
                         fontFamily: 'Readex Pro',
-                        color: FlutterFlowTheme.of(context).primary,
+                        color: Color(0xFF4B39EF),
                       ),
                   elevation: 2.0,
                   borderSide: BorderSide(
@@ -295,7 +335,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                   color: Color(0xFFE7E7EB),
                   textStyle: FlutterFlowTheme.of(context).titleSmall.override(
                         fontFamily: 'Lexend Deca',
-                        color: FlutterFlowTheme.of(context).primary,
+                        color: Color(0xFF4B39EF),
                         fontSize: 16.0,
                         fontWeight: FontWeight.normal,
                       ),

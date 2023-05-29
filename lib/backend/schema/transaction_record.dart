@@ -44,6 +44,16 @@ class TransactionRecord extends FirestoreRecord {
   DocumentReference? get createdBy => _createdBy;
   bool hasCreatedBy() => _createdBy != null;
 
+  // "groupReF" field.
+  DocumentReference? _groupReF;
+  DocumentReference? get groupReF => _groupReF;
+  bool hasGroupReF() => _groupReF != null;
+
+  // "userDebt" field.
+  List<double>? _userDebt;
+  List<double> get userDebt => _userDebt ?? const [];
+  bool hasUserDebt() => _userDebt != null;
+
   void _initializeFields() {
     _name = snapshotData['name'] as String?;
     _specifications = snapshotData['specifications'] as String?;
@@ -51,6 +61,8 @@ class TransactionRecord extends FirestoreRecord {
     _sum = castToType<double>(snapshotData['sum']);
     _users = getDataList(snapshotData['users']);
     _createdBy = snapshotData['created_by'] as DocumentReference?;
+    _groupReF = snapshotData['groupReF'] as DocumentReference?;
+    _userDebt = getDataList(snapshotData['userDebt']);
   }
 
   static CollectionReference get collection =>
@@ -85,6 +97,7 @@ Map<String, dynamic> createTransactionRecordData({
   DateTime? createdAt,
   double? sum,
   DocumentReference? createdBy,
+  DocumentReference? groupReF,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -93,6 +106,7 @@ Map<String, dynamic> createTransactionRecordData({
       'created_at': createdAt,
       'sum': sum,
       'created_by': createdBy,
+      'groupReF': groupReF,
     }.withoutNulls,
   );
 
