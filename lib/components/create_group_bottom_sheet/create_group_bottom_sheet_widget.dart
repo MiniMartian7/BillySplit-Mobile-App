@@ -3,8 +3,10 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'create_group_bottom_sheet_model.dart';
@@ -204,16 +206,31 @@ class _CreateGroupBottomSheetWidgetState
                   padding: EdgeInsetsDirectional.fromSTEB(0.0, 16.0, 0.0, 0.0),
                   child: FFButtonWidget(
                     onPressed: () async {
-                      final groupsCreateData = {
-                        ...createGroupsRecordData(
-                          name: _model.groupNameController.text,
-                          limit: int.tryParse(_model.groupLimitController.text),
-                          status: true,
+                      final groupsCreateData = createGroupsRecordData(
+                        name: _model.groupNameController.text,
+                        limit: int.tryParse(_model.groupLimitController.text),
+                        status: true,
+                        id: random_data.randomString(
+                          1,
+                          10,
+                          true,
+                          false,
+                          false,
                         ),
-                        'userId': [currentUserReference],
+                      );
+                      var groupsRecordReference = GroupsRecord.collection.doc();
+                      await groupsRecordReference.set(groupsCreateData);
+                      _model.groupDocOut = GroupsRecord.getDocumentFromData(
+                          groupsCreateData, groupsRecordReference);
+
+                      final usersUpdateData = {
+                        'groups_id':
+                            FieldValue.arrayUnion([_model.groupDocOut!.id]),
                       };
-                      await GroupsRecord.collection.doc().set(groupsCreateData);
+                      await currentUserReference!.update(usersUpdateData);
                       Navigator.pop(context);
+
+                      setState(() {});
                     },
                     text: 'Done',
                     options: FFButtonOptions(

@@ -24,11 +24,6 @@ class GroupsRecord extends FirestoreRecord {
   int get value => _value ?? 0;
   bool hasValue() => _value != null;
 
-  // "userId" field.
-  List<DocumentReference>? _userId;
-  List<DocumentReference> get userId => _userId ?? const [];
-  bool hasUserId() => _userId != null;
-
   // "limit" field.
   int? _limit;
   int get limit => _limit ?? 0;
@@ -39,12 +34,23 @@ class GroupsRecord extends FirestoreRecord {
   bool get status => _status ?? false;
   bool hasStatus() => _status != null;
 
+  // "id" field.
+  String? _id;
+  String get id => _id ?? '';
+  bool hasId() => _id != null;
+
+  // "balance_id" field.
+  List<String>? _balanceId;
+  List<String> get balanceId => _balanceId ?? const [];
+  bool hasBalanceId() => _balanceId != null;
+
   void _initializeFields() {
     _name = snapshotData['name'] as String?;
     _value = snapshotData['value'] as int?;
-    _userId = getDataList(snapshotData['userId']);
     _limit = snapshotData['limit'] as int?;
     _status = snapshotData['status'] as bool?;
+    _id = snapshotData['id'] as String?;
+    _balanceId = getDataList(snapshotData['balance_id']);
   }
 
   static CollectionReference get collection =>
@@ -77,6 +83,7 @@ Map<String, dynamic> createGroupsRecordData({
   int? value,
   int? limit,
   bool? status,
+  String? id,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
@@ -84,6 +91,7 @@ Map<String, dynamic> createGroupsRecordData({
       'value': value,
       'limit': limit,
       'status': status,
+      'id': id,
     }.withoutNulls,
   );
 

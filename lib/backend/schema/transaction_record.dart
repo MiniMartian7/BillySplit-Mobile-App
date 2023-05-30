@@ -19,50 +19,50 @@ class TransactionRecord extends FirestoreRecord {
   String get name => _name ?? '';
   bool hasName() => _name != null;
 
-  // "specifications" field.
-  String? _specifications;
-  String get specifications => _specifications ?? '';
-  bool hasSpecifications() => _specifications != null;
-
   // "created_at" field.
   DateTime? _createdAt;
   DateTime? get createdAt => _createdAt;
   bool hasCreatedAt() => _createdAt != null;
 
-  // "sum" field.
-  double? _sum;
-  double get sum => _sum ?? 0.0;
-  bool hasSum() => _sum != null;
+  // "description" field.
+  String? _description;
+  String get description => _description ?? '';
+  bool hasDescription() => _description != null;
 
-  // "users" field.
-  List<DocumentReference>? _users;
-  List<DocumentReference> get users => _users ?? const [];
-  bool hasUsers() => _users != null;
+  // "value" field.
+  double? _value;
+  double get value => _value ?? 0.0;
+  bool hasValue() => _value != null;
 
-  // "created_by" field.
-  DocumentReference? _createdBy;
-  DocumentReference? get createdBy => _createdBy;
-  bool hasCreatedBy() => _createdBy != null;
+  // "created_by_id" field.
+  String? _createdById;
+  String get createdById => _createdById ?? '';
+  bool hasCreatedById() => _createdById != null;
 
-  // "groupReF" field.
-  DocumentReference? _groupReF;
-  DocumentReference? get groupReF => _groupReF;
-  bool hasGroupReF() => _groupReF != null;
+  // "id" field.
+  String? _id;
+  String get id => _id ?? '';
+  bool hasId() => _id != null;
 
-  // "userDebt" field.
-  List<double>? _userDebt;
-  List<double> get userDebt => _userDebt ?? const [];
-  bool hasUserDebt() => _userDebt != null;
+  // "balance_id" field.
+  List<String>? _balanceId;
+  List<String> get balanceId => _balanceId ?? const [];
+  bool hasBalanceId() => _balanceId != null;
+
+  // "group_id" field.
+  String? _groupId;
+  String get groupId => _groupId ?? '';
+  bool hasGroupId() => _groupId != null;
 
   void _initializeFields() {
     _name = snapshotData['name'] as String?;
-    _specifications = snapshotData['specifications'] as String?;
     _createdAt = snapshotData['created_at'] as DateTime?;
-    _sum = castToType<double>(snapshotData['sum']);
-    _users = getDataList(snapshotData['users']);
-    _createdBy = snapshotData['created_by'] as DocumentReference?;
-    _groupReF = snapshotData['groupReF'] as DocumentReference?;
-    _userDebt = getDataList(snapshotData['userDebt']);
+    _description = snapshotData['description'] as String?;
+    _value = castToType<double>(snapshotData['value']);
+    _createdById = snapshotData['created_by_id'] as String?;
+    _id = snapshotData['id'] as String?;
+    _balanceId = getDataList(snapshotData['balance_id']);
+    _groupId = snapshotData['group_id'] as String?;
   }
 
   static CollectionReference get collection =>
@@ -93,20 +93,22 @@ class TransactionRecord extends FirestoreRecord {
 
 Map<String, dynamic> createTransactionRecordData({
   String? name,
-  String? specifications,
   DateTime? createdAt,
-  double? sum,
-  DocumentReference? createdBy,
-  DocumentReference? groupReF,
+  String? description,
+  double? value,
+  String? createdById,
+  String? id,
+  String? groupId,
 }) {
   final firestoreData = mapToFirestore(
     <String, dynamic>{
       'name': name,
-      'specifications': specifications,
       'created_at': createdAt,
-      'sum': sum,
-      'created_by': createdBy,
-      'groupReF': groupReF,
+      'description': description,
+      'value': value,
+      'created_by_id': createdById,
+      'id': id,
+      'group_id': groupId,
     }.withoutNulls,
   );
 

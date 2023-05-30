@@ -6,11 +6,11 @@ import '/flutter_flow/flutter_flow_animations.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
-import '/custom_code/actions/index.dart' as actions;
-import '/flutter_flow/random_data_util.dart' as random_data;
+import '/flutter_flow/custom_functions.dart' as functions;
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'home_page_model.dart';
@@ -232,18 +232,47 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 10.0, 0.0),
-                                    child: Text(
-                                      random_data
-                                          .randomInteger(10, 100)
-                                          .toString(),
-                                      style: FlutterFlowTheme.of(context)
-                                          .displaySmall
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            color: Colors.white,
-                                            fontSize: 36.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
+                                    child: StreamBuilder<List<BalanceRecord>>(
+                                      stream: queryBalanceRecord(
+                                        queryBuilder: (balanceRecord) =>
+                                            balanceRecord.where('user_id',
+                                                isEqualTo: currentUserUid),
+                                      ),
+                                      builder: (context, snapshot) {
+                                        // Customize what your widget looks like when it's loading.
+                                        if (!snapshot.hasData) {
+                                          return Center(
+                                            child: SizedBox(
+                                              width: 50.0,
+                                              height: 50.0,
+                                              child: SpinKitRing(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primary,
+                                                size: 50.0,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        List<BalanceRecord>
+                                            textBalanceRecordList =
+                                            snapshot.data!;
+                                        return Text(
+                                          functions
+                                              .balanceUserCreditSum(
+                                                  textBalanceRecordList
+                                                      .toList())
+                                              .toString(),
+                                          style: FlutterFlowTheme.of(context)
+                                              .displaySmall
+                                              .override(
+                                                fontFamily: 'Outfit',
+                                                color: Colors.white,
+                                                fontSize: 36.0,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
@@ -271,18 +300,47 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                   Padding(
                                     padding: EdgeInsetsDirectional.fromSTEB(
                                         0.0, 12.0, 10.0, 0.0),
-                                    child: Text(
-                                      random_data
-                                          .randomInteger(10, 100)
-                                          .toString(),
-                                      style: FlutterFlowTheme.of(context)
-                                          .displaySmall
-                                          .override(
-                                            fontFamily: 'Outfit',
-                                            color: Colors.white,
-                                            fontSize: 36.0,
-                                            fontWeight: FontWeight.normal,
-                                          ),
+                                    child: StreamBuilder<List<BalanceRecord>>(
+                                      stream: queryBalanceRecord(
+                                        queryBuilder: (balanceRecord) =>
+                                            balanceRecord.where('user_id',
+                                                isEqualTo: currentUserUid),
+                                      ),
+                                      builder: (context, snapshot) {
+                                        // Customize what your widget looks like when it's loading.
+                                        if (!snapshot.hasData) {
+                                          return Center(
+                                            child: SizedBox(
+                                              width: 50.0,
+                                              height: 50.0,
+                                              child: SpinKitRing(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primary,
+                                                size: 50.0,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                        List<BalanceRecord>
+                                            textBalanceRecordList =
+                                            snapshot.data!;
+                                        return Text(
+                                          functions
+                                              .balanceUserDebtSum(
+                                                  textBalanceRecordList
+                                                      .toList())
+                                              .toString(),
+                                          style: FlutterFlowTheme.of(context)
+                                              .displaySmall
+                                              .override(
+                                                fontFamily: 'Outfit',
+                                                color: Colors.white,
+                                                fontSize: 36.0,
+                                                fontWeight: FontWeight.normal,
+                                              ),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ],
@@ -326,160 +384,167 @@ class _HomePageWidgetState extends State<HomePageWidget>
                                     ),
                               ),
                             ),
-                            StreamBuilder<List<GroupsRecord>>(
-                              stream: queryGroupsRecord(
-                                queryBuilder: (groupsRecord) =>
-                                    groupsRecord.where('userId',
-                                        arrayContains: currentUserReference),
-                              ),
-                              builder: (context, snapshot) {
-                                // Customize what your widget looks like when it's loading.
-                                if (!snapshot.hasData) {
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 50.0,
-                                      height: 50.0,
-                                      child: CircularProgressIndicator(
-                                        color: FlutterFlowTheme.of(context)
-                                            .primary,
-                                      ),
-                                    ),
-                                  );
-                                }
-                                List<GroupsRecord> listViewGroupsRecordList =
-                                    snapshot.data!;
-                                if (listViewGroupsRecordList.isEmpty) {
-                                  return Container(
-                                    height: 450.0,
-                                    child: EmptyGroupListWidget(),
-                                  );
-                                }
-                                return ListView.builder(
-                                  padding: EdgeInsets.zero,
-                                  shrinkWrap: true,
-                                  scrollDirection: Axis.vertical,
-                                  itemCount: listViewGroupsRecordList.length,
-                                  itemBuilder: (context, listViewIndex) {
-                                    final listViewGroupsRecord =
-                                        listViewGroupsRecordList[listViewIndex];
-                                    return Padding(
-                                      padding: EdgeInsetsDirectional.fromSTEB(
-                                          10.0, 0.0, 0.0, 0.0),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        focusColor: Colors.transparent,
-                                        hoverColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        onTap: () async {
-                                          _model.sum =
-                                              await actions.transactionSum(
-                                            listViewGroupsRecord.reference.id,
-                                          );
-
-                                          context.pushNamed(
-                                            'GroupPage',
-                                            queryParams: {
-                                              'groupDetails': serializeParam(
-                                                listViewGroupsRecord.reference,
-                                                ParamType.DocumentReference,
-                                              ),
-                                              'sum': serializeParam(
-                                                _model.sum,
-                                                ParamType.double,
-                                              ),
-                                            }.withoutNulls,
-                                          );
-
-                                          setState(() {});
-                                        },
-                                        onLongPress: () async {
-                                          var confirmDialogResponse =
-                                              await showDialog<bool>(
-                                                    context: context,
-                                                    builder:
-                                                        (alertDialogContext) {
-                                                      return AlertDialog(
-                                                        title: Text(
-                                                            listViewGroupsRecord
-                                                                .name),
-                                                        content: Text(
-                                                            'Delete group?'),
-                                                        actions: [
-                                                          TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.pop(
-                                                                    alertDialogContext,
-                                                                    false),
-                                                            child: Text('No'),
-                                                          ),
-                                                          TextButton(
-                                                            onPressed: () =>
-                                                                Navigator.pop(
-                                                                    alertDialogContext,
-                                                                    true),
-                                                            child: Text('Yes'),
-                                                          ),
-                                                        ],
-                                                      );
-                                                    },
-                                                  ) ??
-                                                  false;
-                                          if (confirmDialogResponse) {
-                                            await listViewGroupsRecord.reference
-                                                .delete();
-                                          } else {
-                                            return;
-                                          }
-                                        },
-                                        child: ListTile(
-                                          leading: Icon(
-                                            Icons.group,
-                                            color: Color(0xFF4B39EF),
-                                            size: 35.0,
-                                          ),
-                                          title: Text(
-                                            listViewGroupsRecord.name,
-                                            style: FlutterFlowTheme.of(context)
-                                                .titleLarge
-                                                .override(
-                                                  fontFamily: 'Outfit',
-                                                  color: Color(0xFF4B39EF),
-                                                ),
-                                          ),
-                                          subtitle: Text(
-                                            listViewGroupsRecord.status
-                                                ? 'Open'
-                                                : 'Closed',
-                                            style: FlutterFlowTheme.of(context)
-                                                .labelMedium
-                                                .override(
-                                                  fontFamily: 'Readex Pro',
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                ),
-                                          ),
-                                          trailing: Icon(
-                                            Icons.arrow_forward_ios,
-                                            color: FlutterFlowTheme.of(context)
-                                                .secondaryText,
-                                            size: 20.0,
-                                          ),
-                                          tileColor: Color(0xFFC8C9CD),
-                                          dense: false,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
-                                          ),
+                            AuthUserStreamWidget(
+                              builder: (context) =>
+                                  StreamBuilder<List<GroupsRecord>>(
+                                stream: queryGroupsRecord(
+                                  queryBuilder: (groupsRecord) =>
+                                      groupsRecord.whereIn(
+                                          'id',
+                                          (currentUserDocument?.groupsId
+                                                  ?.toList() ??
+                                              [])),
+                                ),
+                                builder: (context, snapshot) {
+                                  // Customize what your widget looks like when it's loading.
+                                  if (!snapshot.hasData) {
+                                    return Center(
+                                      child: SizedBox(
+                                        width: 50.0,
+                                        height: 50.0,
+                                        child: SpinKitRing(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          size: 50.0,
                                         ),
                                       ),
                                     );
-                                  },
-                                ).animateOnActionTrigger(
-                                  animationsMap[
-                                      'listViewOnActionTriggerAnimation']!,
-                                );
-                              },
+                                  }
+                                  List<GroupsRecord> listViewGroupsRecordList =
+                                      snapshot.data!;
+                                  if (listViewGroupsRecordList.isEmpty) {
+                                    return Container(
+                                      height: 450.0,
+                                      child: EmptyGroupListWidget(),
+                                    );
+                                  }
+                                  return ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    shrinkWrap: true,
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: listViewGroupsRecordList.length,
+                                    itemBuilder: (context, listViewIndex) {
+                                      final listViewGroupsRecord =
+                                          listViewGroupsRecordList[
+                                              listViewIndex];
+                                      return Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            10.0, 0.0, 0.0, 0.0),
+                                        child: InkWell(
+                                          splashColor: Colors.transparent,
+                                          focusColor: Colors.transparent,
+                                          hoverColor: Colors.transparent,
+                                          highlightColor: Colors.transparent,
+                                          onTap: () async {
+                                            context.pushNamed(
+                                              'GroupPage',
+                                              queryParams: {
+                                                'groupDoc': serializeParam(
+                                                  listViewGroupsRecord,
+                                                  ParamType.Document,
+                                                ),
+                                              }.withoutNulls,
+                                              extra: <String, dynamic>{
+                                                'groupDoc':
+                                                    listViewGroupsRecord,
+                                              },
+                                            );
+                                          },
+                                          onLongPress: () async {
+                                            var confirmDialogResponse =
+                                                await showDialog<bool>(
+                                                      context: context,
+                                                      builder:
+                                                          (alertDialogContext) {
+                                                        return AlertDialog(
+                                                          title: Text(
+                                                              listViewGroupsRecord
+                                                                  .name),
+                                                          content: Text(
+                                                              'Delete group?'),
+                                                          actions: [
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      false),
+                                                              child: Text('No'),
+                                                            ),
+                                                            TextButton(
+                                                              onPressed: () =>
+                                                                  Navigator.pop(
+                                                                      alertDialogContext,
+                                                                      true),
+                                                              child:
+                                                                  Text('Yes'),
+                                                            ),
+                                                          ],
+                                                        );
+                                                      },
+                                                    ) ??
+                                                    false;
+                                            if (confirmDialogResponse) {
+                                              await listViewGroupsRecord
+                                                  .reference
+                                                  .delete();
+                                            } else {
+                                              return;
+                                            }
+                                          },
+                                          child: ListTile(
+                                            leading: Icon(
+                                              Icons.group,
+                                              color: Color(0xFF4B39EF),
+                                              size: 35.0,
+                                            ),
+                                            title: Text(
+                                              listViewGroupsRecord.name,
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .titleLarge
+                                                      .override(
+                                                        fontFamily: 'Outfit',
+                                                        color:
+                                                            Color(0xFF4B39EF),
+                                                      ),
+                                            ),
+                                            subtitle: Text(
+                                              listViewGroupsRecord.status
+                                                  ? 'Open'
+                                                  : 'Closed',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .labelMedium
+                                                  .override(
+                                                    fontFamily: 'Readex Pro',
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText,
+                                                  ),
+                                            ),
+                                            trailing: Icon(
+                                              Icons.arrow_forward_ios,
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryText,
+                                              size: 20.0,
+                                            ),
+                                            tileColor: Color(0xFFC8C9CD),
+                                            dense: false,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8.0),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ).animateOnActionTrigger(
+                                    animationsMap[
+                                        'listViewOnActionTriggerAnimation']!,
+                                  );
+                                },
+                              ),
                             ),
                           ],
                         ),

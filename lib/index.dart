@@ -8,5 +8,5 @@ export '/pages/add_transaction_members/add_transaction_members_widget.dart'
     show AddTransactionMembersWidget;
 export '/pages/add_group_members/add_group_members_widget.dart'
     show AddGroupMembersWidget;
-export '/pages/transactions_result/transactions_result_widget.dart'
-    show TransactionsResultWidget;
+export '/pages/transaction_page/transaction_page_widget.dart'
+    show TransactionPageWidget;

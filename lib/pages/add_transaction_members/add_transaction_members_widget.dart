@@ -5,10 +5,12 @@ import '/flutter_flow/flutter_flow_icon_button.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:text_search/text_search.dart';
@@ -18,18 +20,12 @@ export 'add_transaction_members_model.dart';
 class AddTransactionMembersWidget extends StatefulWidget {
   const AddTransactionMembersWidget({
     Key? key,
-    required this.groupRef,
-    required this.transactionRef,
-    required this.transactionSum,
-    required this.transactionNmae,
-    required this.transactionDescription,
+    required this.transactionDoc,
+    required this.groupDoc,
   }) : super(key: key);
 
-  final DocumentReference? groupRef;
-  final DocumentReference? transactionRef;
-  final double? transactionSum;
-  final String? transactionNmae;
-  final String? transactionDescription;
+  final TransactionRecord? transactionDoc;
+  final GroupsRecord? groupDoc;
 
   @override
   _AddTransactionMembersWidgetState createState() =>
@@ -79,8 +75,9 @@ class _AddTransactionMembersWidgetState
             child: SizedBox(
               width: 50.0,
               height: 50.0,
-              child: CircularProgressIndicator(
+              child: SpinKitRing(
                 color: FlutterFlowTheme.of(context).primary,
+                size: 50.0,
               ),
             ),
           );
@@ -90,64 +87,100 @@ class _AddTransactionMembersWidgetState
           onTap: () => FocusScope.of(context).requestFocus(_unfocusNode),
           child: Scaffold(
             key: scaffoldKey,
-            backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+            backgroundColor: Colors.white,
             floatingActionButton: FloatingActionButton(
               onPressed: () async {
-                final transactionUpdateData = {
-                  'users': _model.usersList,
-                };
-                await widget.transactionRef!.update(transactionUpdateData);
-
                 context.pushNamed(
-                  'TransactionsResult',
+                  'TransactionPage',
                   queryParams: {
-                    'groupDetails': serializeParam(
-                      widget.groupRef,
-                      ParamType.DocumentReference,
+                    'transactionDoc': serializeParam(
+                      widget.transactionDoc,
+                      ParamType.Document,
                     ),
-                    'transactionParticipants': serializeParam(
-                      _model.usersList,
-                      ParamType.DocumentReference,
-                      true,
-                    ),
-                    'transactionName': serializeParam(
-                      widget.transactionNmae,
-                      ParamType.String,
-                    ),
-                    'trasnsactionDescription': serializeParam(
-                      widget.transactionDescription,
-                      ParamType.String,
-                    ),
-                    'transactionSum': serializeParam(
-                      widget.transactionSum,
-                      ParamType.double,
+                    'groupDoc': serializeParam(
+                      widget.groupDoc,
+                      ParamType.Document,
                     ),
                   }.withoutNulls,
+                  extra: <String, dynamic>{
+                    'transactionDoc': widget.transactionDoc,
+                    'groupDoc': widget.groupDoc,
+                  },
                 );
               },
               backgroundColor: FlutterFlowTheme.of(context).primary,
               elevation: 8.0,
+              child: InkWell(
+                splashColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: () async {
+                  context.pushNamed(
+                    'TransactionPage',
+                    queryParams: {
+                      'transactionDoc': serializeParam(
+                        widget.transactionDoc,
+                        ParamType.Document,
+                      ),
+                      'groupDoc': serializeParam(
+                        widget.groupDoc,
+                        ParamType.Document,
+                      ),
+                    }.withoutNulls,
+                    extra: <String, dynamic>{
+                      'transactionDoc': widget.transactionDoc,
+                      'groupDoc': widget.groupDoc,
+                    },
+                  );
+                },
+                child: Icon(
+                  Icons.check,
+                  color: Colors.white,
+                  size: 28.0,
+                ),
+              ),
             ),
             appBar: AppBar(
-              backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+              backgroundColor: Colors.white,
               automaticallyImplyLeading: false,
-              leading: FlutterFlowIconButton(
-                borderColor: Colors.transparent,
-                borderRadius: 30.0,
-                borderWidth: 1.0,
-                buttonSize: 54.0,
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: FlutterFlowTheme.of(context).secondaryText,
-                  size: 24.0,
-                ),
-                onPressed: () async {
-                  context.safePop();
-                },
-              ),
-              title: Text(
-                'Add Members',
-                style: FlutterFlowTheme.of(context).headlineSmall,
+              title: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  FlutterFlowIconButton(
+                    borderColor: Colors.transparent,
+                    borderRadius: 30.0,
+                    buttonSize: 46.0,
+                    icon: Icon(
+                      Icons.arrow_back_rounded,
+                      color: Color(0xFF4B39EF),
+                      size: 26.0,
+                    ),
+                    onPressed: () async {
+                      context.pushNamed(
+                        'GroupPage',
+                        queryParams: {
+                          'groupDoc': serializeParam(
+                            widget.groupDoc,
+                            ParamType.Document,
+                          ),
+                        }.withoutNulls,
+                        extra: <String, dynamic>{
+                          'groupDoc': widget.groupDoc,
+                        },
+                      );
+                    },
+                  ),
+                  Text(
+                    'Add Members',
+                    style: FlutterFlowTheme.of(context).titleSmall.override(
+                          fontFamily: 'Readex Pro',
+                          color: Color(0xFF4B39EF),
+                          fontSize: 24.0,
+                        ),
+                  ),
+                ],
               ),
               actions: [],
               centerTitle: false,
@@ -158,6 +191,11 @@ class _AddTransactionMembersWidgetState
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Divider(
+                    height: 5.0,
+                    thickness: 0.0,
+                    color: Color(0xFF4B39EF),
+                  ),
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(16.0, 8.0, 16.0, 12.0),
@@ -194,8 +232,7 @@ class _AddTransactionMembersWidgetState
                                   FlutterFlowTheme.of(context).labelMedium,
                               enabledBorder: OutlineInputBorder(
                                 borderSide: BorderSide(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
+                                  color: Color(0xFF59636A),
                                   width: 2.0,
                                 ),
                                 borderRadius: BorderRadius.circular(12.0),
@@ -222,10 +259,14 @@ class _AddTransactionMembersWidgetState
                                 borderRadius: BorderRadius.circular(12.0),
                               ),
                               filled: true,
-                              fillColor: FlutterFlowTheme.of(context)
-                                  .secondaryBackground,
+                              fillColor: Colors.white,
                             ),
-                            style: FlutterFlowTheme.of(context).bodyMedium,
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Readex Pro',
+                                  color: Colors.black,
+                                ),
                             validator: _model.textControllerValidator
                                 .asValidator(context),
                           ),
@@ -262,17 +303,37 @@ class _AddTransactionMembersWidgetState
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 44.0),
-                    child: Builder(
-                      builder: (context) {
-                        final usersAdded = _model.usersList.toList();
+                    child: StreamBuilder<List<UsersRecord>>(
+                      stream: queryUsersRecord(
+                        queryBuilder: (usersRecord) => usersRecord.where(
+                            'transaction_id',
+                            arrayContains: widget.transactionDoc!.id),
+                      ),
+                      builder: (context, snapshot) {
+                        // Customize what your widget looks like when it's loading.
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: SpinKitRing(
+                                color: FlutterFlowTheme.of(context).primary,
+                                size: 50.0,
+                              ),
+                            ),
+                          );
+                        }
+                        List<UsersRecord> listViewUsersRecordList =
+                            snapshot.data!;
                         return ListView.builder(
                           padding: EdgeInsets.zero,
                           primary: false,
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
-                          itemCount: usersAdded.length,
-                          itemBuilder: (context, usersAddedIndex) {
-                            final usersAddedItem = usersAdded[usersAddedIndex];
+                          itemCount: listViewUsersRecordList.length,
+                          itemBuilder: (context, listViewIndex) {
+                            final listViewUsersRecord =
+                                listViewUsersRecordList[listViewIndex];
                             return Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   16.0, 4.0, 16.0, 8.0),
@@ -280,8 +341,7 @@ class _AddTransactionMembersWidgetState
                                 width: double.infinity,
                                 height: 60.0,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
+                                  color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 4.0,
@@ -297,139 +357,75 @@ class _AddTransactionMembersWidgetState
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
                                     mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
+                                      Icon(
+                                        Icons.location_history_sharp,
+                                        color: Color(0xFF4B39EF),
+                                        size: 42.0,
+                                      ),
                                       Expanded(
                                         child: Padding(
                                           padding:
                                               EdgeInsetsDirectional.fromSTEB(
                                                   12.0, 0.0, 0.0, 0.0),
-                                          child: StreamBuilder<UsersRecord>(
-                                            stream: UsersRecord.getDocument(
-                                                usersAddedItem),
-                                            builder: (context, snapshot) {
-                                              // Customize what your widget looks like when it's loading.
-                                              if (!snapshot.hasData) {
-                                                return Center(
-                                                  child: SizedBox(
-                                                    width: 50.0,
-                                                    height: 50.0,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                      color:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .primary,
-                                                    ),
-                                                  ),
-                                                );
-                                              }
-                                              final columnUsersRecord =
-                                                  snapshot.data!;
-                                              return Column(
-                                                mainAxisSize: MainAxisSize.max,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    columnUsersRecord.email,
-                                                    style: FlutterFlowTheme.of(
-                                                            context)
-                                                        .bodyMedium,
-                                                  ),
-                                                  Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.max,
-                                                    children: [
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsetsDirectional
-                                                                .fromSTEB(
-                                                                    0.0,
-                                                                    4.0,
-                                                                    0.0,
-                                                                    0.0),
-                                                        child: Text(
-                                                          columnUsersRecord
-                                                              .displayName,
-                                                          style: FlutterFlowTheme
-                                                                  .of(context)
-                                                              .labelMedium,
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.max,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                listViewUsersRecord.displayName,
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily:
+                                                              'Readex Pro',
+                                                          color: Colors.black,
                                                         ),
+                                              ),
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        0.0, 4.0, 0.0, 0.0),
+                                                child: Text(
+                                                  listViewUsersRecord.email,
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .labelMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Readex Pro',
+                                                        fontSize: 10.0,
                                                       ),
-                                                      Text(
-                                                        columnUsersRecord.email,
-                                                        style:
-                                                            FlutterFlowTheme.of(
-                                                                    context)
-                                                                .bodyMedium,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      ),
-                                      FFButtonWidget(
-                                        onPressed: () async {
-                                          await showModalBottomSheet(
-                                            isScrollControlled: true,
-                                            backgroundColor: Colors.transparent,
-                                            enableDrag: false,
-                                            context: context,
-                                            builder: (bottomSheetContext) {
-                                              return GestureDetector(
-                                                onTap: () => FocusScope.of(
-                                                        context)
-                                                    .requestFocus(_unfocusNode),
-                                                child: Padding(
-                                                  padding: MediaQuery.of(
-                                                          bottomSheetContext)
-                                                      .viewInsets,
-                                                  child: InputValueWidget(
-                                                    sum: widget.transactionSum
-                                                        .toString(),
-                                                    transactionRef:
-                                                        widget.transactionRef!,
-                                                  ),
                                                 ),
-                                              );
-                                            },
-                                          ).then((value) => setState(() {}));
-                                        },
-                                        text: 'Add',
-                                        options: FFButtonOptions(
-                                          height: 40.0,
-                                          padding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  24.0, 0.0, 24.0, 0.0),
-                                          iconPadding:
-                                              EdgeInsetsDirectional.fromSTEB(
-                                                  0.0, 0.0, 0.0, 0.0),
-                                          color: FlutterFlowTheme.of(context)
-                                              .primary,
-                                          textStyle:
-                                              FlutterFlowTheme.of(context)
-                                                  .bodyMedium,
-                                          elevation: 3.0,
-                                          borderSide: BorderSide(
-                                            color: Colors.transparent,
-                                            width: 1.0,
+                                              ),
+                                            ],
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
+                                        ),
+                                      ),
+                                      Flexible(
+                                        child: InputValueWidget(
+                                          key: Key(
+                                              'Key96c_${listViewIndex}_of_${listViewUsersRecordList.length}'),
+                                          userId: listViewUsersRecord.uid,
+                                          transactionId:
+                                              widget.transactionDoc!.id,
                                         ),
                                       ),
                                       FFButtonWidget(
                                         onPressed: () async {
-                                          setState(() {
-                                            _model.removeFromUsersList(
-                                                usersAddedItem);
-                                          });
+                                          final usersUpdateData = {
+                                            'transaction_id':
+                                                FieldValue.arrayRemove([
+                                              widget.transactionDoc!.id
+                                            ]),
+                                          };
+                                          await listViewUsersRecord.reference
+                                              .update(usersUpdateData);
                                         },
                                         text: 'Remove',
                                         options: FFButtonOptions(
@@ -483,19 +479,37 @@ class _AddTransactionMembersWidgetState
                   Padding(
                     padding:
                         EdgeInsetsDirectional.fromSTEB(0.0, 12.0, 0.0, 44.0),
-                    child: Builder(
-                      builder: (context) {
-                        final usersNoSearch =
-                            _model.simpleSearchResults.toList();
+                    child: StreamBuilder<List<UsersRecord>>(
+                      stream: queryUsersRecord(
+                        queryBuilder: (usersRecord) => usersRecord.where(
+                            'groups_id',
+                            arrayContains: widget.groupDoc!.id),
+                      ),
+                      builder: (context, snapshot) {
+                        // Customize what your widget looks like when it's loading.
+                        if (!snapshot.hasData) {
+                          return Center(
+                            child: SizedBox(
+                              width: 50.0,
+                              height: 50.0,
+                              child: SpinKitRing(
+                                color: FlutterFlowTheme.of(context).primary,
+                                size: 50.0,
+                              ),
+                            ),
+                          );
+                        }
+                        List<UsersRecord> listViewUsersRecordList =
+                            snapshot.data!;
                         return ListView.builder(
                           padding: EdgeInsets.zero,
                           primary: false,
                           shrinkWrap: true,
                           scrollDirection: Axis.vertical,
-                          itemCount: usersNoSearch.length,
-                          itemBuilder: (context, usersNoSearchIndex) {
-                            final usersNoSearchItem =
-                                usersNoSearch[usersNoSearchIndex];
+                          itemCount: listViewUsersRecordList.length,
+                          itemBuilder: (context, listViewIndex) {
+                            final listViewUsersRecord =
+                                listViewUsersRecordList[listViewIndex];
                             return Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   16.0, 4.0, 16.0, 8.0),
@@ -503,8 +517,7 @@ class _AddTransactionMembersWidgetState
                                 width: double.infinity,
                                 height: 60.0,
                                 decoration: BoxDecoration(
-                                  color: FlutterFlowTheme.of(context)
-                                      .secondaryBackground,
+                                  color: Colors.white,
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 4.0,
@@ -519,18 +532,12 @@ class _AddTransactionMembersWidgetState
                                       8.0, 0.0, 8.0, 0.0),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.max,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(26.0),
-                                        child: Image.network(
-                                          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8MTZ8fHByb2ZpbGV8ZW58MHx8MHx8&auto=format&fit=crop&w=900&q=60',
-                                          width: 36.0,
-                                          height: 36.0,
-                                          fit: BoxFit.cover,
-                                        ),
+                                      Icon(
+                                        Icons.location_history_sharp,
+                                        color: Color(0xFF4B39EF),
+                                        size: 42.0,
                                       ),
                                       Expanded(
                                         child: Padding(
@@ -545,28 +552,21 @@ class _AddTransactionMembersWidgetState
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                usersNoSearchItem.displayName,
+                                                listViewUsersRecord.displayName,
                                                 style:
                                                     FlutterFlowTheme.of(context)
                                                         .bodyMedium,
                                               ),
-                                              Row(
-                                                mainAxisSize: MainAxisSize.max,
-                                                children: [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsetsDirectional
-                                                            .fromSTEB(0.0, 4.0,
-                                                                0.0, 0.0),
-                                                    child: Text(
-                                                      usersNoSearchItem.email,
-                                                      style:
-                                                          FlutterFlowTheme.of(
-                                                                  context)
-                                                              .labelMedium,
-                                                    ),
-                                                  ),
-                                                ],
+                                              Padding(
+                                                padding: EdgeInsetsDirectional
+                                                    .fromSTEB(
+                                                        0.0, 4.0, 0.0, 0.0),
+                                                child: Text(
+                                                  listViewUsersRecord.email,
+                                                  style: FlutterFlowTheme.of(
+                                                          context)
+                                                      .labelMedium,
+                                                ),
                                               ),
                                             ],
                                           ),
@@ -574,10 +574,31 @@ class _AddTransactionMembersWidgetState
                                       ),
                                       FFButtonWidget(
                                         onPressed: () async {
-                                          setState(() {
-                                            _model.addToUsersList(
-                                                usersNoSearchItem.reference);
-                                          });
+                                          final usersUpdateData = {
+                                            'transaction_id':
+                                                FieldValue.arrayUnion([
+                                              widget.transactionDoc!.id
+                                            ]),
+                                          };
+                                          await listViewUsersRecord.reference
+                                              .update(usersUpdateData);
+
+                                          final balanceCreateData =
+                                              createBalanceRecordData(
+                                            id: random_data.randomString(
+                                              1,
+                                              10,
+                                              true,
+                                              false,
+                                              false,
+                                            ),
+                                            userId: listViewUsersRecord.uid,
+                                            transactionId:
+                                                widget.transactionDoc!.id,
+                                          );
+                                          await BalanceRecord.collection
+                                              .doc()
+                                              .set(balanceCreateData);
                                         },
                                         text: 'Add',
                                         options: FFButtonOptions(

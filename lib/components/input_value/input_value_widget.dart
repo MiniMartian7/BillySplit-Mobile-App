@@ -2,9 +2,10 @@ import '/auth/firebase_auth/auth_util.dart';
 import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
-import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'input_value_model.dart';
@@ -13,13 +14,12 @@ export 'input_value_model.dart';
 class InputValueWidget extends StatefulWidget {
   const InputValueWidget({
     Key? key,
-    String? sum,
-    required this.transactionRef,
-  })  : this.sum = sum ?? '0',
-        super(key: key);
+    required this.userId,
+    required this.transactionId,
+  }) : super(key: key);
 
-  final String sum;
-  final DocumentReference? transactionRef;
+  final String? userId;
+  final String? transactionId;
 
   @override
   _InputValueWidgetState createState() => _InputValueWidgetState();
@@ -39,8 +39,7 @@ class _InputValueWidgetState extends State<InputValueWidget> {
     super.initState();
     _model = createModel(context, () => InputValueModel());
 
-    _model.inputValueFieldController ??=
-        TextEditingController(text: widget.sum);
+    _model.inputValueFieldController ??= TextEditingController();
   }
 
   @override
@@ -52,98 +51,110 @@ class _InputValueWidgetState extends State<InputValueWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.max,
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        TextFormField(
-          controller: _model.inputValueFieldController,
-          obscureText: false,
-          decoration: InputDecoration(
-            labelStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+    return StreamBuilder<List<BalanceRecord>>(
+      stream: queryBalanceRecord(
+        queryBuilder: (balanceRecord) => balanceRecord
+            .where('user_id', isEqualTo: widget.userId)
+            .where('transaction_id', isEqualTo: widget.transactionId),
+        singleRecord: true,
+      ),
+      builder: (context, snapshot) {
+        // Customize what your widget looks like when it's loading.
+        if (!snapshot.hasData) {
+          return Center(
+            child: SizedBox(
+              width: 50.0,
+              height: 50.0,
+              child: SpinKitRing(
+                color: FlutterFlowTheme.of(context).primary,
+                size: 50.0,
+              ),
+            ),
+          );
+        }
+        List<BalanceRecord> inputValueFieldBalanceRecordList = snapshot.data!;
+        // Return an empty Container when the item does not exist.
+        if (snapshot.data!.isEmpty) {
+          return Container();
+        }
+        final inputValueFieldBalanceRecord =
+            inputValueFieldBalanceRecordList.isNotEmpty
+                ? inputValueFieldBalanceRecordList.first
+                : null;
+        return Container(
+          width: 60.0,
+          child: TextFormField(
+            controller: _model.inputValueFieldController,
+            onChanged: (_) => EasyDebounce.debounce(
+              '_model.inputValueFieldController',
+              Duration(milliseconds: 2000),
+              () async {
+                final balanceUpdateData = createBalanceRecordData(
+                  debt: double.tryParse(_model.inputValueFieldController.text),
+                );
+                await inputValueFieldBalanceRecord!.reference
+                    .update(balanceUpdateData);
+              },
+            ),
+            obscureText: false,
+            decoration: InputDecoration(
+              labelStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                    fontFamily: 'Lexend Deca',
+                    color: Color(0xFF57636C),
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.normal,
+                  ),
+              hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
+                    fontFamily: 'Lexend Deca',
+                    color: Color(0xFF57636C),
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.normal,
+                  ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0xFF4B39EF),
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0x00000000),
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0x00000000),
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(
+                  color: Color(0x00000000),
+                  width: 2.0,
+                ),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding:
+                  EdgeInsetsDirectional.fromSTEB(10.0, 10.0, 10.0, 10.0),
+            ),
+            style: FlutterFlowTheme.of(context).bodyMedium.override(
                   fontFamily: 'Lexend Deca',
-                  color: Color(0xFF57636C),
-                  fontSize: 14.0,
+                  color: Color(0xFF4B39EF),
+                  fontSize: 16.0,
                   fontWeight: FontWeight.normal,
                 ),
-            hintStyle: FlutterFlowTheme.of(context).bodyMedium.override(
-                  fontFamily: 'Lexend Deca',
-                  color: Color(0xFF57636C),
-                  fontSize: 14.0,
-                  fontWeight: FontWeight.normal,
-                ),
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Color(0xFFDBE2E7),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Color(0x00000000),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Color(0x00000000),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: Color(0x00000000),
-                width: 2.0,
-              ),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding:
-                EdgeInsetsDirectional.fromSTEB(24.0, 24.0, 20.0, 24.0),
+            textAlign: TextAlign.end,
+            validator:
+                _model.inputValueFieldControllerValidator.asValidator(context),
           ),
-          style: FlutterFlowTheme.of(context).bodyMedium.override(
-                fontFamily: 'Lexend Deca',
-                color: Color(0xFF1D2429),
-                fontSize: 14.0,
-                fontWeight: FontWeight.normal,
-              ),
-          maxLines: null,
-          validator:
-              _model.inputValueFieldControllerValidator.asValidator(context),
-        ),
-        FFButtonWidget(
-          onPressed: () async {
-            Navigator.pop(context);
-
-            final transactionUpdateData = {
-              'userDebt': FieldValue.arrayUnion(
-                  [double.tryParse(_model.inputValueFieldController.text)]),
-            };
-            await widget.transactionRef!.update(transactionUpdateData);
-          },
-          text: 'Save',
-          options: FFButtonOptions(
-            height: 40.0,
-            padding: EdgeInsetsDirectional.fromSTEB(24.0, 0.0, 24.0, 0.0),
-            iconPadding: EdgeInsetsDirectional.fromSTEB(0.0, 0.0, 0.0, 0.0),
-            color: FlutterFlowTheme.of(context).primary,
-            textStyle: FlutterFlowTheme.of(context).titleSmall.override(
-                  fontFamily: 'Readex Pro',
-                  color: Colors.white,
-                ),
-            elevation: 3.0,
-            borderSide: BorderSide(
-              color: Colors.transparent,
-              width: 1.0,
-            ),
-            borderRadius: BorderRadius.circular(8.0),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

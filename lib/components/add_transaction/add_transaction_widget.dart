@@ -3,8 +3,10 @@ import '/backend/backend.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/random_data_util.dart' as random_data;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'add_transaction_model.dart';
@@ -13,10 +15,10 @@ export 'add_transaction_model.dart';
 class AddTransactionWidget extends StatefulWidget {
   const AddTransactionWidget({
     Key? key,
-    required this.groupRef,
+    required this.groupDoc,
   }) : super(key: key);
 
-  final DocumentReference? groupRef;
+  final GroupsRecord? groupDoc;
 
   @override
   _AddTransactionWidgetState createState() => _AddTransactionWidgetState();
@@ -37,7 +39,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
     _model = createModel(context, () => AddTransactionModel());
 
     _model.transactionController ??= TextEditingController();
-    _model.sumController ??= TextEditingController();
+    _model.valueController ??= TextEditingController();
     _model.specificationsController ??= TextEditingController();
   }
 
@@ -144,7 +146,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
             Padding(
               padding: EdgeInsetsDirectional.fromSTEB(8.0, 0.0, 8.0, 0.0),
               child: TextFormField(
-                controller: _model.sumController,
+                controller: _model.valueController,
                 autofocus: true,
                 obscureText: false,
                 decoration: InputDecoration(
@@ -192,7 +194,7 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                       color: Colors.black,
                       fontSize: 16.0,
                     ),
-                validator: _model.sumControllerValidator.asValidator(context),
+                validator: _model.valueControllerValidator.asValidator(context),
               ),
             ),
             Padding(
@@ -257,44 +259,66 @@ class _AddTransactionWidgetState extends State<AddTransactionWidget> {
                 onPressed: () async {
                   final transactionCreateData = createTransactionRecordData(
                     name: _model.transactionController.text,
-                    sum: double.tryParse(_model.sumController.text),
-                    createdAt: dateTimeFromSecondsSinceEpoch(
-                        getCurrentTimestamp.secondsSinceEpoch),
-                    specifications: _model.specificationsController.text,
-                    groupReF: widget.groupRef,
-                    createdBy: currentUserReference,
+                    createdAt:
+                        dateTimeFromSecondsSinceEpoch(valueOrDefault<int>(
+                      getCurrentTimestamp.secondsSinceEpoch,
+                      0,
+                    )),
+                    description: _model.specificationsController.text,
+                    value: double.tryParse(_model.valueController.text),
+                    createdById: currentUserUid,
+                    id: random_data.randomString(
+                      1,
+                      10,
+                      true,
+                      false,
+                      false,
+                    ),
+                    groupId: widget.groupDoc!.id,
                   );
                   var transactionRecordReference =
                       TransactionRecord.collection.doc();
                   await transactionRecordReference.set(transactionCreateData);
-                  _model.transactionRef = TransactionRecord.getDocumentFromData(
+                  _model.transactionDoc = TransactionRecord.getDocumentFromData(
                       transactionCreateData, transactionRecordReference);
+
+                  final usersUpdateData = {
+                    'transaction_id':
+                        FieldValue.arrayUnion([_model.transactionDoc!.id]),
+                  };
+                  await currentUserReference!.update(usersUpdateData);
+
+                  final balanceCreateData = createBalanceRecordData(
+                    id: random_data.randomString(
+                      1,
+                      10,
+                      true,
+                      false,
+                      false,
+                    ),
+                    userId: _model.transactionDoc!.createdById,
+                    credit: _model.transactionDoc!.value,
+                    transactionId: _model.transactionDoc!.id,
+                  );
+                  await BalanceRecord.collection.doc().set(balanceCreateData);
                   Navigator.pop(context);
 
                   context.pushNamed(
                     'AddTransactionMembers',
                     queryParams: {
-                      'groupRef': serializeParam(
-                        widget.groupRef,
-                        ParamType.DocumentReference,
+                      'transactionDoc': serializeParam(
+                        _model.transactionDoc,
+                        ParamType.Document,
                       ),
-                      'transactionRef': serializeParam(
-                        _model.transactionRef!.reference,
-                        ParamType.DocumentReference,
-                      ),
-                      'transactionSum': serializeParam(
-                        double.tryParse(_model.sumController.text),
-                        ParamType.double,
-                      ),
-                      'transactionNmae': serializeParam(
-                        _model.transactionController.text,
-                        ParamType.String,
-                      ),
-                      'transactionDescription': serializeParam(
-                        _model.specificationsController.text,
-                        ParamType.String,
+                      'groupDoc': serializeParam(
+                        widget.groupDoc,
+                        ParamType.Document,
                       ),
                     }.withoutNulls,
+                    extra: <String, dynamic>{
+                      'transactionDoc': _model.transactionDoc,
+                      'groupDoc': widget.groupDoc,
+                    },
                   );
 
                   setState(() {});

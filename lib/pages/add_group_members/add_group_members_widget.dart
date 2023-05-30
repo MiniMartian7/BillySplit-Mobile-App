@@ -7,6 +7,7 @@ import '/flutter_flow/flutter_flow_widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_debounce/easy_debounce.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:text_search/text_search.dart';
@@ -16,10 +17,12 @@ export 'add_group_members_model.dart';
 class AddGroupMembersWidget extends StatefulWidget {
   const AddGroupMembersWidget({
     Key? key,
-    required this.groupRef,
+    required this.groupDocRef,
+    required this.groupDoc,
   }) : super(key: key);
 
-  final DocumentReference? groupRef;
+  final DocumentReference? groupDocRef;
+  final GroupsRecord? groupDoc;
 
   @override
   _AddGroupMembersWidgetState createState() => _AddGroupMembersWidgetState();
@@ -56,16 +59,24 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
         backgroundColor: Colors.white,
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            final groupsUpdateData = {
-              'userId': _model.usersList,
-            };
-            await widget.groupRef!.update(groupsUpdateData);
+            context.pushNamed(
+              'GroupPage',
+              queryParams: {
+                'groupDoc': serializeParam(
+                  widget.groupDoc,
+                  ParamType.Document,
+                ),
+              }.withoutNulls,
+              extra: <String, dynamic>{
+                'groupDoc': widget.groupDoc,
+              },
+            );
           },
           backgroundColor: FlutterFlowTheme.of(context).primary,
           elevation: 8.0,
           child: Icon(
             Icons.done,
-            color: FlutterFlowTheme.of(context).secondaryText,
+            color: Colors.white,
             size: 40.0,
           ),
         ),
@@ -86,7 +97,18 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                   size: 26.0,
                 ),
                 onPressed: () async {
-                  context.pop();
+                  context.pushNamed(
+                    'GroupPage',
+                    queryParams: {
+                      'groupDoc': serializeParam(
+                        widget.groupDoc,
+                        ParamType.Document,
+                      ),
+                    }.withoutNulls,
+                    extra: <String, dynamic>{
+                      'groupDoc': widget.groupDoc,
+                    },
+                  );
                 },
               ),
               Text(
@@ -135,8 +157,9 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                                 child: SizedBox(
                                   width: 50.0,
                                   height: 50.0,
-                                  child: CircularProgressIndicator(
+                                  child: SpinKitRing(
                                     color: FlutterFlowTheme.of(context).primary,
+                                    size: 50.0,
                                   ),
                                 ),
                               );
@@ -273,18 +296,39 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 12.0, 0.0, 44.0),
-                              child: Builder(
-                                builder: (context) {
-                                  final usersAdded = _model.usersList.toList();
+                              child: StreamBuilder<List<UsersRecord>>(
+                                stream: queryUsersRecord(
+                                  queryBuilder: (usersRecord) =>
+                                      usersRecord.where('groups_id',
+                                          arrayContains: widget.groupDoc!.id),
+                                ),
+                                builder: (context, snapshot) {
+                                  // Customize what your widget looks like when it's loading.
+                                  if (!snapshot.hasData) {
+                                    return Center(
+                                      child: SizedBox(
+                                        width: 50.0,
+                                        height: 50.0,
+                                        child: SpinKitRing(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          size: 50.0,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  List<UsersRecord> listViewUsersRecordList =
+                                      snapshot.data!;
                                   return ListView.builder(
                                     padding: EdgeInsets.zero,
                                     primary: false,
                                     shrinkWrap: true,
                                     scrollDirection: Axis.vertical,
-                                    itemCount: usersAdded.length,
-                                    itemBuilder: (context, usersAddedIndex) {
-                                      final usersAddedItem =
-                                          usersAdded[usersAddedIndex];
+                                    itemCount: listViewUsersRecordList.length,
+                                    itemBuilder: (context, listViewIndex) {
+                                      final listViewUsersRecord =
+                                          listViewUsersRecordList[
+                                              listViewIndex];
                                       return Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             16.0, 4.0, 16.0, 8.0),
@@ -324,89 +368,61 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                                                         EdgeInsetsDirectional
                                                             .fromSTEB(12.0, 0.0,
                                                                 0.0, 0.0),
-                                                    child: StreamBuilder<
-                                                        UsersRecord>(
-                                                      stream: UsersRecord
-                                                          .getDocument(
-                                                              usersAddedItem),
-                                                      builder:
-                                                          (context, snapshot) {
-                                                        // Customize what your widget looks like when it's loading.
-                                                        if (!snapshot.hasData) {
-                                                          return Center(
-                                                            child: SizedBox(
-                                                              width: 50.0,
-                                                              height: 50.0,
-                                                              child:
-                                                                  CircularProgressIndicator(
-                                                                color: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .primary,
+                                                    child: Column(
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .center,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                          listViewUsersRecord
+                                                              .displayName,
+                                                          style: FlutterFlowTheme
+                                                                  .of(context)
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                color: Colors
+                                                                    .black,
                                                               ),
-                                                            ),
-                                                          );
-                                                        }
-                                                        final columnUsersRecord =
-                                                            snapshot.data!;
-                                                        return Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .center,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              columnUsersRecord
-                                                                  .email,
-                                                              style: FlutterFlowTheme
-                                                                      .of(context)
-                                                                  .bodyMedium
-                                                                  .override(
-                                                                    fontFamily:
-                                                                        'Readex Pro',
-                                                                    color: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .primary,
-                                                                  ),
-                                                            ),
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .max,
-                                                              children: [
-                                                                Padding(
-                                                                  padding: EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          4.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                                  child: Text(
-                                                                    columnUsersRecord
-                                                                        .displayName,
-                                                                    style: FlutterFlowTheme.of(
-                                                                            context)
-                                                                        .labelMedium,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        );
-                                                      },
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                      0.0,
+                                                                      4.0,
+                                                                      0.0,
+                                                                      0.0),
+                                                          child: Text(
+                                                            listViewUsersRecord
+                                                                .email,
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .labelMedium,
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),
                                                 FFButtonWidget(
                                                   onPressed: () async {
-                                                    setState(() {
-                                                      _model
-                                                          .removeFromUsersList(
-                                                              usersAddedItem);
-                                                    });
+                                                    final usersUpdateData = {
+                                                      'groups_id': FieldValue
+                                                          .arrayRemove([
+                                                        widget.groupDoc!.id
+                                                      ]),
+                                                    };
+                                                    await listViewUsersRecord
+                                                        .reference
+                                                        .update(
+                                                            usersUpdateData);
                                                   },
                                                   text: 'Remove',
                                                   options: FFButtonOptions(
@@ -476,7 +492,7 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                           padding: EdgeInsetsDirectional.fromSTEB(
                               20.0, 0.0, 0.0, 0.0),
                           child: Text(
-                            'Add Members',
+                            'Active Users',
                             style: FlutterFlowTheme.of(context).labelMedium,
                           ),
                         ),
@@ -491,19 +507,35 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                             child: Padding(
                               padding: EdgeInsetsDirectional.fromSTEB(
                                   0.0, 12.0, 0.0, 44.0),
-                              child: Builder(
-                                builder: (context) {
-                                  final usersNoSearch =
-                                      _model.simpleSearchResults.toList();
+                              child: StreamBuilder<List<UsersRecord>>(
+                                stream: queryUsersRecord(),
+                                builder: (context, snapshot) {
+                                  // Customize what your widget looks like when it's loading.
+                                  if (!snapshot.hasData) {
+                                    return Center(
+                                      child: SizedBox(
+                                        width: 50.0,
+                                        height: 50.0,
+                                        child: SpinKitRing(
+                                          color: FlutterFlowTheme.of(context)
+                                              .primary,
+                                          size: 50.0,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  List<UsersRecord> listViewUsersRecordList =
+                                      snapshot.data!;
                                   return ListView.builder(
                                     padding: EdgeInsets.zero,
                                     primary: false,
                                     shrinkWrap: true,
                                     scrollDirection: Axis.vertical,
-                                    itemCount: usersNoSearch.length,
-                                    itemBuilder: (context, usersNoSearchIndex) {
-                                      final usersNoSearchItem =
-                                          usersNoSearch[usersNoSearchIndex];
+                                    itemCount: listViewUsersRecordList.length,
+                                    itemBuilder: (context, listViewIndex) {
+                                      final listViewUsersRecord =
+                                          listViewUsersRecordList[
+                                              listViewIndex];
                                       return Padding(
                                         padding: EdgeInsetsDirectional.fromSTEB(
                                             16.0, 4.0, 16.0, 8.0),
@@ -512,7 +544,7 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                                           height: 60.0,
                                           decoration: BoxDecoration(
                                             color: FlutterFlowTheme.of(context)
-                                                .secondaryBackground,
+                                                .primaryBtnText,
                                             boxShadow: [
                                               BoxShadow(
                                                 blurRadius: 4.0,
@@ -555,33 +587,33 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          usersNoSearchItem
+                                                          listViewUsersRecord
                                                               .displayName,
                                                           style: FlutterFlowTheme
                                                                   .of(context)
-                                                              .bodyMedium,
-                                                        ),
-                                                        Row(
-                                                          mainAxisSize:
-                                                              MainAxisSize.max,
-                                                          children: [
-                                                            Padding(
-                                                              padding:
-                                                                  EdgeInsetsDirectional
-                                                                      .fromSTEB(
-                                                                          0.0,
-                                                                          4.0,
-                                                                          0.0,
-                                                                          0.0),
-                                                              child: Text(
-                                                                usersNoSearchItem
-                                                                    .email,
-                                                                style: FlutterFlowTheme.of(
-                                                                        context)
-                                                                    .labelMedium,
+                                                              .bodyMedium
+                                                              .override(
+                                                                fontFamily:
+                                                                    'Readex Pro',
+                                                                color: Colors
+                                                                    .black,
                                                               ),
-                                                            ),
-                                                          ],
+                                                        ),
+                                                        Padding(
+                                                          padding:
+                                                              EdgeInsetsDirectional
+                                                                  .fromSTEB(
+                                                                      0.0,
+                                                                      4.0,
+                                                                      0.0,
+                                                                      0.0),
+                                                          child: Text(
+                                                            listViewUsersRecord
+                                                                .email,
+                                                            style: FlutterFlowTheme
+                                                                    .of(context)
+                                                                .labelMedium,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
@@ -589,11 +621,16 @@ class _AddGroupMembersWidgetState extends State<AddGroupMembersWidget> {
                                                 ),
                                                 FFButtonWidget(
                                                   onPressed: () async {
-                                                    setState(() {
-                                                      _model.addToUsersList(
-                                                          usersNoSearchItem
-                                                              .reference);
-                                                    });
+                                                    final usersUpdateData = {
+                                                      'groups_id': FieldValue
+                                                          .arrayUnion([
+                                                        widget.groupDoc!.id
+                                                      ]),
+                                                    };
+                                                    await listViewUsersRecord
+                                                        .reference
+                                                        .update(
+                                                            usersUpdateData);
                                                   },
                                                   text: 'Add',
                                                   options: FFButtonOptions(

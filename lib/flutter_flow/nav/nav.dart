@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:page_transition/page_transition.dart';
 import '../flutter_flow_theme.dart';
@@ -100,51 +101,51 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
         FFRoute(
           name: 'GroupPage',
           path: '/groupPage',
+          asyncParams: {
+            'groupDoc': getDoc(['groups'], GroupsRecord.fromSnapshot),
+          },
           builder: (context, params) => GroupPageWidget(
-            groupDetails: params.getParam(
-                'groupDetails', ParamType.DocumentReference, false, ['groups']),
-            sum: params.getParam('sum', ParamType.double),
+            groupDoc: params.getParam('groupDoc', ParamType.Document),
           ),
         ),
         FFRoute(
           name: 'AddTransactionMembers',
           path: '/addTransactionMembers',
+          asyncParams: {
+            'transactionDoc':
+                getDoc(['transaction'], TransactionRecord.fromSnapshot),
+            'groupDoc': getDoc(['groups'], GroupsRecord.fromSnapshot),
+          },
           builder: (context, params) => AddTransactionMembersWidget(
-            groupRef: params.getParam(
-                'groupRef', ParamType.DocumentReference, false, ['groups']),
-            transactionRef: params.getParam('transactionRef',
-                ParamType.DocumentReference, false, ['transaction']),
-            transactionSum: params.getParam('transactionSum', ParamType.double),
-            transactionNmae:
-                params.getParam('transactionNmae', ParamType.String),
-            transactionDescription:
-                params.getParam('transactionDescription', ParamType.String),
+            transactionDoc:
+                params.getParam('transactionDoc', ParamType.Document),
+            groupDoc: params.getParam('groupDoc', ParamType.Document),
           ),
         ),
         FFRoute(
           name: 'AddGroupMembers',
           path: '/addGroupMembers',
+          asyncParams: {
+            'groupDoc': getDoc(['groups'], GroupsRecord.fromSnapshot),
+          },
           builder: (context, params) => AddGroupMembersWidget(
-            groupRef: params.getParam(
-                'groupRef', ParamType.DocumentReference, false, ['groups']),
+            groupDocRef: params.getParam(
+                'groupDocRef', ParamType.DocumentReference, false, ['groups']),
+            groupDoc: params.getParam('groupDoc', ParamType.Document),
           ),
         ),
         FFRoute(
-          name: 'TransactionsResult',
-          path: '/transactionsResult',
-          builder: (context, params) => TransactionsResultWidget(
-            groupDetails: params.getParam(
-                'groupDetails', ParamType.DocumentReference, false, ['groups']),
-            transactionParticipants: params.getParam<DocumentReference>(
-                'transactionParticipants',
-                ParamType.DocumentReference,
-                true,
-                ['users']),
-            transactionName:
-                params.getParam('transactionName', ParamType.String),
-            trasnsactionDescription:
-                params.getParam('trasnsactionDescription', ParamType.String),
-            transactionSum: params.getParam('transactionSum', ParamType.double),
+          name: 'TransactionPage',
+          path: '/transactionPage',
+          asyncParams: {
+            'transactionDoc':
+                getDoc(['transaction'], TransactionRecord.fromSnapshot),
+            'groupDoc': getDoc(['groups'], GroupsRecord.fromSnapshot),
+          },
+          builder: (context, params) => TransactionPageWidget(
+            transactionDoc:
+                params.getParam('transactionDoc', ParamType.Document),
+            groupDoc: params.getParam('groupDoc', ParamType.Document),
           ),
         )
       ].map((r) => r.toRoute(appStateNotifier)).toList(),
@@ -332,8 +333,9 @@ class FFRoute {
                   child: SizedBox(
                     width: 50.0,
                     height: 50.0,
-                    child: CircularProgressIndicator(
+                    child: SpinKitRing(
                       color: FlutterFlowTheme.of(context).primary,
+                      size: 50.0,
                     ),
                   ),
                 )
